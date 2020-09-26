@@ -1,5 +1,6 @@
-/* eslint no-console: ["error", { allow: ["log"] }] */
+/* eslint no-console: ["error", { allow: ["log", "err"] }] */
 /* eslint class-methods-use-this: ["error", { "exceptMethods": ["handleRegister"] }] */
+/* eslint-disable react/destructuring-assignment */
 
 import React from 'react';
 import { connect } from 'react-redux';
@@ -14,32 +15,53 @@ class RegisterPage extends React.Component {
     super();
 
     this.handleRegister = this.handleRegister.bind(this);
+
+    this.state = {
+      error: '',
+    };
   }
 
-  handleRegister() {
+  errorMessage() {
+    const { error } = this.state.error;
+    return error;
+  }
+
+  handleRegister(e) {
+    e.preventDefault();
     /* This method handles registration of a new user by sending the user credentials to the
         corresponding endpoint and redirecting to the login page. */
-    // TODO: Validate credentials.
+
     const credentials = {
       email: document.getElementById('email').value,
       password: btoa(document.getElementById('password').value),
     };
 
-    // TODO: Handle errors returned by firebase.
+    /* Firebase handles input validation, like existing email, weak password etc. */
     axios
       .post('/api/register', credentials)
-      .catch((err) => console.log(err))
-      .then((res) => console.log(res.data));
-
-    // TODO: Make sure the redirection occurs only when registration was successful.
-    history.push('/login');
+      .then((res) => {
+        /* If res.data.status is true, registration was successful.
+              Else, display the error message. */
+        if (res.data.status) {
+          console.log(res.data.message);
+          history.push('/login');
+        } else {
+          this.setState({ error: res.data.message });
+        }
+      })
+      .catch((err) => console.err(err));
   }
 
   render() {
     return (
       <div id="register-page">
         <h1>timbr Register Page!</h1>
-        <form id="register-form" onSubmit={this.handleRegister}>
+        <p>{this.errorMessage}</p>
+        <form
+          id="register-form"
+          onSubmit={this.handleRegister}
+        >
+
           <input
             id="email"
             type="text"
