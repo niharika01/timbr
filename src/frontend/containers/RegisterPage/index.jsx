@@ -6,9 +6,10 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import './styles.scss';
-import axios from 'axios';
 import map from '../../store/map';
 import history from '../../router/history';
+import authentication from '../../store/reducers/auth';
+import AuthOptions from '../../store/const';
 
 class RegisterPage extends React.Component {
   constructor() {
@@ -29,27 +30,16 @@ class RegisterPage extends React.Component {
   handleRegister(e) {
     e.preventDefault();
     /* This method handles registration of a new user by sending the user credentials to the
-        corresponding endpoint and redirecting to the login page. */
-
+        corresponding function and redirecting to the login page. */
+    // TODO: Validate credentials.
     const credentials = {
       email: document.getElementById('email').value,
       password: btoa(document.getElementById('password').value),
     };
 
-    /* Firebase handles input validation, like existing email, weak password etc. */
-    axios
-      .post('/api/register', credentials)
-      .then((res) => {
-        /* If res.data.status is true, registration was successful.
-              Else, display the error message. */
-        if (res.data.status) {
-          console.log(res.data.message);
-          history.push('/login');
-        } else {
-          this.setState({ error: res.data.message });
-        }
-      })
-      .catch((err) => console.err(err));
+    // TODO: Handle errors returned by firebase, redirect only if registration successful.
+    authentication(AuthOptions.REGISTER_WITH_TIMBR, credentials);
+    history.push('/login');
   }
 
   render() {
