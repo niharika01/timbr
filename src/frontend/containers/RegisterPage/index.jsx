@@ -5,11 +5,10 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
+import PropTypes from 'prop-types';
 import './styles.scss';
 import map from '../../store/map';
-import history from '../../router/history';
-import authentication from '../../store/reducers/auth';
-import AuthOptions from '../../store/const';
+import accountActions from '../../store/actions/account';
 
 class RegisterPage extends React.Component {
   constructor() {
@@ -18,8 +17,16 @@ class RegisterPage extends React.Component {
     this.handleRegister = this.handleRegister.bind(this);
   }
 
-  handleRegister(e) {
-    e.preventDefault();
+  componentDidUpdate() {
+    const { store: { account: { uid } }, history } = this.props;
+    if (uid) {
+      history.push('/');
+    }
+  }
+
+  handleRegister() {
+    const { history } = this.props;
+
     /* This method handles registration of a new user by sending the user credentials to the
         corresponding function and redirecting to the login page. */
     const credentials = {
@@ -27,15 +34,9 @@ class RegisterPage extends React.Component {
       password: btoa(document.getElementById('password').value),
     };
 
-    authentication(AuthOptions.REGISTER_WITH_TIMBR, credentials)
-      .then(() => {
-        console.log('User created!');
-        // This redirection not working!
-        history.push('/login');
-      })
-      .catch((error) => {
-        document.getElementById('error').innerHTML = error.message;
-      });
+    // TODO: Handle errors returned by firebase, redirect only if registration successful.
+    accountActions.registerWithTimbr(credentials);
+    history.push('/login');
   }
 
   render() {
@@ -66,5 +67,14 @@ class RegisterPage extends React.Component {
     );
   }
 }
+
+RegisterPage.propTypes = {
+  history: PropTypes.object.isRequired,
+  store: PropTypes.shape({
+    account: PropTypes.shape({
+      uid: PropTypes.string,
+    }),
+  }).isRequired,
+};
 
 export default connect(map)(withRouter(RegisterPage));
