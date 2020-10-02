@@ -5,11 +5,10 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
+import PropTypes from 'prop-types';
 import './styles.scss';
 import map from '../../store/map';
-import history from '../../router/history';
-import authentication from '../../store/reducers/auth';
-import AuthOptions from '../../store/const';
+import accountActions from '../../store/actions/account';
 
 class RegisterPage extends React.Component {
   constructor() {
@@ -18,7 +17,16 @@ class RegisterPage extends React.Component {
     this.handleRegister = this.handleRegister.bind(this);
   }
 
+  componentDidUpdate() {
+    const { store: { account: { uid } }, history } = this.props;
+    if (uid) {
+      history.push('/');
+    }
+  }
+
   handleRegister() {
+    const { history } = this.props;
+
     /* This method handles registration of a new user by sending the user credentials to the
         corresponding function and redirecting to the login page. */
     // TODO: Validate credentials.
@@ -28,7 +36,7 @@ class RegisterPage extends React.Component {
     };
 
     // TODO: Handle errors returned by firebase, redirect only if registration successful.
-    authentication(AuthOptions.REGISTER_WITH_TIMBR, credentials);
+    accountActions.registerWithTimbr(credentials);
     history.push('/login');
   }
 
@@ -55,5 +63,14 @@ class RegisterPage extends React.Component {
     );
   }
 }
+
+RegisterPage.propTypes = {
+  history: PropTypes.object.isRequired,
+  store: PropTypes.shape({
+    account: PropTypes.shape({
+      uid: PropTypes.string,
+    }),
+  }).isRequired,
+};
 
 export default connect(map)(withRouter(RegisterPage));
